@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - instancing - raycast</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link type="text/css" rel="stylesheet" href="main.css">
+	</head>
+	<body>
+		<script type="module">
+
+			import * as THREE from '/build/three.module.js';
+
+			import { OrbitControls } from "/jsm/controls/OrbitControls.js";
+			import { GLTFLoader } from "/jsm/loaders/GLTFLoader.js";
+
+			let gun;
+
+			let initSwitchX
+
+            window.scene = new THREE.Scene();
+            const light = new THREE.DirectionalLight('#ffffff', 0.9);
+
+            var raycaster = new THREE.Raycaster();
+            var mouse = new THREE.Vector2(), INTERSECTED;
+            
+            light.position.set(-20, 0, 100);
+            
+            
+            scene.rotation.x = 1
+
+            const camera = new THREE.PerspectiveCamera(10, window.innerWidth/window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            const renderer = new THREE.WebGLRenderer();
+            renderer.setPixelRatio( window.devicePixelRatio );
+            renderer.setSize( window.innerWidth, window.innerHeight );
+
+            document.body.appendChild(renderer.domElement);
+
+            // Instantiate a loader
+            var loader = new GLTFLoader();
+
+            
+
+
+            var perspectiveCamera, orthographicCamera, controls;
+
+            var params = {
+                orthographicCamera: false
+            };
+
+            var frustumSize = 400;
+
+
+
+            // init
+            var aspect = window.innerWidth / window.innerHeight;
+
+				perspectiveCamera = new THREE.PerspectiveCamera( 60, aspect, 1, 1000 );
+				perspectiveCamera.position.z = 500;
+
+				orthographicCamera = new THREE.OrthographicCamera( frustumSize * aspect / - 2, frustumSize * aspect / 2, frustumSize / 2, frustumSize / - 2, 1, 1000 );
+				orthographicCamera.position.z = 500;
+
+            
+				new OrbitControls( camera, renderer.domElement );
+
+
+
+
+            // Load a glTF resource
+            loader.load(
+                // resource URL
+                '/obj/demo.gltf',
+                // called when the resource is loaded
+                function ( gltf ) {
+
+                    scene.add( gltf.scene );
+					scene.add(light);
+
+                    gltf.animations; // Array<THREE.AnimationClip>
+                    gltf.scene; // THREE.Scene
+                    gltf.scenes; // Array<THREE.Scene>
+                    gltf.cameras; // Array<THREE.Camera>
+                    gltf.asset; // Object
+
+					// init curr rotations...
+					console.warn(`done`)
+					initSwitchX = scene.getObjectByName("Switch").rotation.x
+
+                },
+                // called while loading is progressing
+                function ( xhr ) {
+					console.log(( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+					// console.log(scene)
+					console.log(scene)
+					
+					// console.warn(scene.children[0])
+                },
+                // called when loading has errors
+                function ( error ) {
+
+                    console.log( 'An error happened' );
+
+                }
+            );
+
+            function onDocumentMouseMove( event ) {
+                event.preventDefault();
+                mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+                mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+            }
+
+            function onWindowResize() {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize( window.innerWidth, window.innerHeight );
+            }
+            
+            function render() {
+                // var camera = ( params.orthographicCamera ) ? orthographicCamera : perspectiveCamera;
+
+                camera.updateMatrixWorld();
+
+                // update the picking ray with the camera and mouse position
+                raycaster.setFromCamera(mouse, camera);
+                
+
+				// console.log(scene)
+
+
+				// var kids = scene.children
+				// console.log(kids)
+
+                // calculate objects intersecting the picking ray
+                var intersects = raycaster.intersectObjects( scene.children, true );
+				// console.warn(intersects)
+
+
+                if ( intersects.length > 0 ) {
+                    if ( INTERSECTED != intersects[ 0 ].object ) {
+                        if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+
+                        INTERSECTED = intersects[ 0 ].object;
+						// console.warn(INTERSECTED)
+                        INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+                        // INTERSECTED.material.emissive.setHex( 0xff0000 );
+                    }
+
+                    } else {
+						if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+						INTERSECTED = null;
+                	}
+
+                requestAnimationFrame(render);
+                
+                renderer.render(scene, camera);
+            }
+
+            document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+            window.addEventListener( 'resize', onWindowResize, false );
+			
+
+			renderer.domElement.addEventListener("click", onclick, true);
+
+			var selectedObject;
+
+
+
+			const mySound = new Audio('sfx/SwitchOn.mp3');
+
+			
+
+			function onclick(event) {
+				console.log(INTERSECTED)
+				if (INTERSECTED.name !== null) {
+
+					switch (INTERSECTED.name) {
+						case `Switch`:
+							// code
+							console.log('its a switch!')
+							let currSwitchRotation = scene.getObjectByName("Switch").rotation.x
+							console.log(`${currSwitchRotation} / ${initSwitchX}`)
+							if (currSwitchRotation === initSwitchX) {
+								scene.getObjectByName("Switch").rotation.x = 10
+								mySound.play()
+							} else {
+								scene.getObjectByName("Switch").rotation.x = initSwitchX
+								mySound.pause();
+								mySound.currentTime = 0;
+							}
+							break;
+						default:
+							// code for default
+					}
+
+				}
+			}
+
+setTimeout(() => {
+	render()
+}, 3000)
+            
+
+
+		</script>
+	</body>
+</html>
