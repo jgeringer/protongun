@@ -72,7 +72,7 @@
             // Load a glTF resource
             loader.load(
                 // resource URL
-                '/obj/demo.gltf',
+                '/obj/24-light-2.gltf',
                 // called when the resource is loaded
                 function ( gltf ) {
 
@@ -87,6 +87,21 @@
 
 					// init curr rotations...
 					console.warn(`done`)
+
+                    // turn off extra lights
+                    // scene.getObjectByName("Lamp").visible = false
+                    // scene.getObjectByName("Lamp001").visible = false
+
+                    // turn off scene lamps
+                    scene.getObjectByName("Lamp-Scene-Right").visible = false
+                    scene.getObjectByName("Lamp-Scene-Left").visible = false
+                    scene.getObjectByName("Lamp-Scene-Back").visible = false
+
+                    // vent lights
+                    scene.getObjectByName("Lamp-Top-Point-1").visible = false
+                    scene.getObjectByName("Lamp-Top-Point-2").visible = false
+                    scene.getObjectByName("Lamp-Top-Point-3").visible = false
+
 					initSwitchX = scene.getObjectByName("Switch").rotation.x
 
                 },
@@ -182,6 +197,12 @@
 							console.log('its a switch!')
 							let currSwitchRotation = scene.getObjectByName("Switch").rotation.x
 							console.log(`${currSwitchRotation} / ${initSwitchX}`)
+
+                            // turn on the light...
+                            scene.getObjectByName("Lamp-Top-Point-1").visible = !scene.getObjectByName("Lamp-Top-Point-1").visible
+                            scene.getObjectByName("Lamp-Top-Point-2").visible = !scene.getObjectByName("Lamp-Top-Point-2").visible
+                            scene.getObjectByName("Lamp-Top-Point-3").visible = !scene.getObjectByName("Lamp-Top-Point-3").visible
+                            
 							if (currSwitchRotation === initSwitchX) {
 								scene.getObjectByName("Switch").rotation.x = 10
 								mySound.play()
