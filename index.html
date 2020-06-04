@@ -23,10 +23,10 @@
 
             var raycaster = new THREE.Raycaster();
             var mouse = new THREE.Vector2(), INTERSECTED;
-            
+
             light.position.set(-20, 0, 100);
-            
-            
+
+
             scene.rotation.x = 1
 
             const camera = new THREE.PerspectiveCamera(10, window.innerWidth/window.innerHeight, 0.1, 1000);
@@ -41,7 +41,7 @@
             // Instantiate a loader
             var loader = new GLTFLoader();
 
-            
+
 
 
             var perspectiveCamera, orthographicCamera, controls;
@@ -63,7 +63,7 @@
 				orthographicCamera = new THREE.OrthographicCamera( frustumSize * aspect / - 2, frustumSize * aspect / 2, frustumSize / 2, frustumSize / - 2, 1, 1000 );
 				orthographicCamera.position.z = 500;
 
-            
+
 				new OrbitControls( camera, renderer.domElement );
 
 
@@ -110,7 +110,7 @@
 					console.log(( xhr.loaded / xhr.total * 100 ) + '% loaded' );
 					// console.log(scene)
 					console.log(scene)
-					
+
 					// console.warn(scene.children[0])
                 },
                 // called when loading has errors
@@ -122,9 +122,13 @@
             );
 
             function onDocumentMouseMove( event ) {
-                event.preventDefault();
-                mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-                mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+                // event.preventDefault();
+                // mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+                // mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+                mouse.x = ( event.touches[0].pageX / window.innerWidth ) ;
+                mouse.y = - ( event.touches[0].pageX / window.innerHeight );
+
+
             }
 
             function onWindowResize() {
@@ -132,7 +136,7 @@
                 camera.updateProjectionMatrix();
                 renderer.setSize( window.innerWidth, window.innerHeight );
             }
-            
+
             function render() {
                 // var camera = ( params.orthographicCamera ) ? orthographicCamera : perspectiveCamera;
 
@@ -140,7 +144,7 @@
 
                 // update the picking ray with the camera and mouse position
                 raycaster.setFromCamera(mouse, camera);
-                
+
 
 				// console.log(scene)
 
@@ -169,15 +173,21 @@
                 	}
 
                 requestAnimationFrame(render);
-                
+
                 renderer.render(scene, camera);
             }
 
-            document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+            // document.addEventListener( 'mousemove', onDocumentMouseMove, false );
             window.addEventListener( 'resize', onWindowResize, false );
-			
 
-			renderer.domElement.addEventListener("click", onclick, true);
+
+
+			// renderer.domElement.addEventListener("click", onclick, true);
+
+            document.addEventListener("touchend", onclick, false);
+            renderer.domElement.addEventListener("click", onclick, true);
+            
+            
 
 			var selectedObject;
 
@@ -185,12 +195,23 @@
 
 			const mySound = new Audio('sfx/SwitchOn.mp3');
 
-			
 
 			function onclick(event) {
-				console.log(INTERSECTED)
-				if (INTERSECTED.name !== null) {
+                event.preventDefault();
 
+                if (window.innerWidth > 767) {
+                    mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+                    mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+                } else {
+                    // if mobile
+                    mouse.x = (event.changedTouches[0].clientX / window.innerWidth) * 2 - 1;
+                    mouse.y = -(event.changedTouches[0].clientY / window.innerHeight) * 2 + 1;
+                }
+
+				console.log(INTERSECTED)
+
+                    if (INTERSECTED.name !== null) {
+                    // alert(INTERSECTED.name)
 					switch (INTERSECTED.name) {
 						case `Switch`:
 							// code
@@ -202,7 +223,7 @@
                             scene.getObjectByName("Lamp-Top-Point-1").visible = !scene.getObjectByName("Lamp-Top-Point-1").visible
                             scene.getObjectByName("Lamp-Top-Point-2").visible = !scene.getObjectByName("Lamp-Top-Point-2").visible
                             scene.getObjectByName("Lamp-Top-Point-3").visible = !scene.getObjectByName("Lamp-Top-Point-3").visible
-                            
+
 							if (currSwitchRotation === initSwitchX) {
 								scene.getObjectByName("Switch").rotation.x = 10
 								mySound.play()
@@ -215,14 +236,16 @@
 						default:
 							// code for default
 					}
+				
+                }
 
-				}
+				
 			}
 
 setTimeout(() => {
 	render()
 }, 3000)
-            
+
 
 
 		</script>
