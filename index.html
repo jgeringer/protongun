@@ -13,6 +13,21 @@
 
 			import { OrbitControls } from "/jsm/controls/OrbitControls.js";
 			import { GLTFLoader } from "/jsm/loaders/GLTFLoader.js";
+            import { EffectComposer } from '/jsm/postprocessing/EffectComposer.js';
+			import { RenderPass } from '/jsm/postprocessing/RenderPass.js';
+            import { UnrealBloomPass } from '/jsm/postprocessing/UnrealBloomPass.js';
+
+            import { BloomPass } from '/jsm/postprocessing/BloomPass.js';
+
+            var params = {
+				exposure: 1.2,
+				bloomStrength: 3,
+				bloomThreshold: 0,
+				bloomRadius: .9
+			};
+
+            var composer;
+
 
 			let gun;
 
@@ -24,17 +39,37 @@
             var raycaster = new THREE.Raycaster();
             var mouse = new THREE.Vector2(), INTERSECTED;
 
+            var clock = new THREE.Clock();
+
+
             light.position.set(-20, 0, 100);
 
 
             scene.rotation.x = 1
 
             const camera = new THREE.PerspectiveCamera(10, window.innerWidth/window.innerHeight, 0.1, 1000);
+
             camera.position.z = 5;
 
-            const renderer = new THREE.WebGLRenderer();
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setPixelRatio( window.devicePixelRatio );
             renderer.setSize( window.innerWidth, window.innerHeight );
+
+
+            var renderScene = new RenderPass( scene, camera );
+
+            var effectBloom = new BloomPass( 0.75 );
+
+
+            // var bloomPass = new UnrealBloomPass( scene.getObjectByName("Cube005"), 1.5, 0.4, 0.85 );
+            // bloomPass.threshold = params.bloomThreshold;
+            // bloomPass.strength = params.bloomStrength;
+            // bloomPass.radius = params.bloomRadius;
+
+            composer = new EffectComposer( renderer );
+            composer.addPass( renderScene );
+            // composer.addPass( bloomPass );
+            composer.addPass( effectBloom )
 
             document.body.appendChild(renderer.domElement);
 
@@ -67,12 +102,14 @@
 				new OrbitControls( camera, renderer.domElement );
 
 
+                
 
 
             // Load a glTF resource
             loader.load(
                 // resource URL
-                '/obj/24-light-2.gltf',
+                // '/obj/24-light-2.gltf',
+                '/obj/25-materials.gltf',
                 // called when the resource is loaded
                 function ( gltf ) {
 
